@@ -39,12 +39,15 @@ import {
 } from '@/data/roadmap';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 export function ResultsFull() {
   const { state, reset } = useAssessment();
   const [expandedInitiative, setExpandedInitiative] = useState<string | null>(null);
-
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   if (!state.result || !state.leadInfo) {
     return null;
   }
@@ -58,17 +61,54 @@ export function ResultsFull() {
   const gapAnalysis = calculateGapAnalysis(dimensionScores, industryBenchmark.dimensionAverages);
   const roadmapPhases = generateRoadmap(dimensionScores, gapAnalysis);
 
-  const handleDownloadPDF = () => {
-    // TODO: Implement PDF generation
-    alert('PDF download coming soon! For now, you can print this page.');
-  };
+const handleDownloadPDF = async () => {
+  if (!reportRef.current) return;
+
+  try {
+    setIsDownloading(true);
+
+    const canvas = await html2canvas(reportRef.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      scrollY: -window.scrollY, // helps capture correctly if user scrolled
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position -= pageHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save('ai-maturity-report.pdf');
+  } finally {
+    setIsDownloading(false);
+  }
+};
 
   const toggleInitiative = (id: string) => {
     setExpandedInitiative(expandedInitiative === id ? null : id);
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-5xl">
+  <div className="container mx-auto px-4 py-12 max-w-5xl">
+    <div ref={reportRef}>
       {/* Success Header */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
@@ -85,10 +125,15 @@ export function ResultsFull() {
 
       {/* Action Bar */}
       <div className="flex justify-center gap-4 mb-8 print:hidden">
-        <Button variant="outline" onClick={handleDownloadPDF} className="gap-2">
-          <Download className="w-4 h-4" />
-          Download PDF
-        </Button>
+        <Button
+  variant="outline"
+  onClick={handleDownloadPDF}
+  className="gap-2"
+  disabled={isDownloading}
+>
+  <Download className="w-4 h-4" />
+  {isDownloading ? 'Generating...' : 'Download PDF'}
+</Button>
         <Button variant="outline" onClick={() => window.print()} className="gap-2">
           Print Report
         </Button>
@@ -491,6 +536,7 @@ export function ResultsFull() {
           </div>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }
