@@ -81,7 +81,7 @@ export function ResultsTeaser() {
           <CardTitle>Dimension Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
+          <div className="h-[420px]">
             <RadarChart
               dimensionScores={dimensionScores}
               benchmarkScores={state.result.industryBenchmark.dimensionAverages}

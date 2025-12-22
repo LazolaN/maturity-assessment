@@ -57,3 +57,58 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Print Styles */
+@media print {
+  /* Prevent page breaks inside cards and sections */
+  .print\:break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Force page break before specific sections if needed */
+  .print\:break-before-page {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  /* Hide elements that shouldn't print */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Reset background for print */
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ensure colors print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Cards should have visible borders in print */
+  .card, [class*="Card"] {
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure initiative cards don't break */
+  .rounded-lg {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Add some margin at page breaks */
+  @page {
+    margin: 1cm;
+  }
+
+  /* Expand all collapsed content for print */
+  details[open] summary ~ * {
+    display: block !important;
+  }
+}
