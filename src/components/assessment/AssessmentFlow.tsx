@@ -5,7 +5,7 @@ import { ContextStep } from './steps/ContextStep';
 import { QuestionStep } from './steps/QuestionStep';
 import { ResultsTeaser } from './steps/ResultsTeaser';
 import { LeadCaptureStep } from './steps/LeadCaptureStep';
-import { ResultsFull } from './steps/ResultsFull';
+import { ResultsFull } from './steps/ResultsFullEnhanced';
 
 export function AssessmentFlow() {
   const { state } = useAssessment();
